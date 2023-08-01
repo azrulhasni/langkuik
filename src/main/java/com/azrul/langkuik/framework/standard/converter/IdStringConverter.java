@@ -1,0 +1,31 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.azrul.langkuik.framework.standard.converter;
+
+import com.vaadin.flow.data.binder.Result;
+import com.vaadin.flow.data.binder.ValueContext;
+import com.vaadin.flow.data.converter.Converter;
+import com.vaadin.flow.data.converter.StringToLongConverter;
+import java.text.NumberFormat;
+import java.util.Locale;
+
+/**
+ *
+ * @author azrul
+ */
+public class IdStringConverter extends StringToLongConverter {
+
+    public IdStringConverter(String error){
+        super(error);
+    }
+
+    @Override
+    protected NumberFormat getFormat(Locale locale) {
+        final NumberFormat format = super.getFormat(locale);
+        format.setGroupingUsed(false); // dont use seperator if it is an id
+        return format;
+    }
+}

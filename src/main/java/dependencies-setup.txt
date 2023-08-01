@@ -1,0 +1,181 @@
+Postgresql
+==========
+Create postgresql docker container with volume outside
+> docker run --name postgresql \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=1qazZAQ! \
+  -p 5433:5432 \
+  -v /Users/azrul/postgres-data:/var/lib/postgresql/data \
+  -d postgres
+  
+> docker pull dpage/pgadmin4
+> docker run -d -p 5480:80 \
+    -e 'PGADMIN_DEFAULT_EMAIL=user@domain.com' \
+    -e 'PGADMIN_DEFAULT_PASSWORD=1qazZAQ!' \
+    -d dpage/pgadmin4 \
+   
+    
+> Install Pgadmin4 connect to DB
+=> Host: host.docker.internal
+=> post: Postgres port (5433 in our case)
+=> create user+password, create DB
+> update application.properties
+> application.lgDDLCreationMode=update
+
+If running LoanOrigSystem
+> run the relatiohmanager.sql, productlisting.sql, districtstatecountry.sql
+> Sequences -> id_generator_id_seq -> Deinition -> Current value=10000
+
+Keycloak (using internal DB)
+========
+
+1) Export 
+1.1) From standalone
+
+Go to <Keycloak dir>/bin
+Run 
+> ./standalone.sh \
+-Djboss.socket.binding.port-offset=100 \
+-Dkeycloak.migration.action=export \
+-Dkeycloak.migration.provider=singleFile \
+-Dkeycloak.migration.realmName=loanorigsystem \
+-Dkeycloak.migration.usersExportStrategy=REALM_FILE \
+-Dkeycloak.migration.file=/Users/azrul/Downloads/keycloak-export.json
+
+1.2) From Docker
+#practical_kalam = keycloak's container id
+> docker exec -it practical_kalam /opt/keycloak/bin/kc.sh export --file /tmp/my_realm.json --users same_file
+
+
+#Copy from container's /tmp/my_realm.json to host' /tmp
+>  docker cp practical_kalam:/tmp/my_realm.json /tmp
+
+
+
+2) Run keycloak in docker
+Expose port 9080 and run on dev mode
+
+2.1) Without SSL
+> docker run -d -p 9080:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:18.0.0 start-dev
+
+
+2.2) With SSL
+
+> openssl req -newkey rsa:2048 -nodes   -keyout keycloak.key.pem -x509 -days 3650 -out keycloak.crt.pem
+> chmod 755 keycloak.key.pem
+> docker run -d \
+  --name keycloak \
+  -e KEYCLOAK_ADMIN=admin \
+  -e KEYCLOAK_ADMIN_PASSWORD=admin \
+  -e KC_HTTPS_CERTIFICATE_FILE=/opt/keycloak/conf/keycloak.crt.pem \
+  -e KC_HTTPS_CERTIFICATE_KEY_FILE=/opt/keycloak/conf/keycloak.key.pem \
+  -v $PWD/keycloak.crt.pem:/opt/keycloak/conf/server.crt.pem \
+  -v $PWD/keycloak.key.pem:/opt/keycloak/conf/server.key.pem \
+  -p 9443:8443 \
+  quay.io/keycloak/keycloak:18.0.0 \
+  start-dev
+
+
+3) Open up keycloak and import realm
+4) Get keycloak client id . Click on client and copy the id after the client/ (b929...) [http://localhost:9080/admin/master/console/#/realms/loanorigsystem/clients/b9293c9d-432c-47c0-8c31-886fab8789a9]
+    Put that in the application.properties application.keycloak-id-of-client=
+
+5) Import keycloak.crt.pem to cacerts
+
+    #import
+    > sudo keytool -import -file keycloak.crt.pem -keystore "$(/usr/libexec/java_home)/lib/security/cacerts" -alias "keycloak certificate" -storepass changeit
+
+    #check
+    > sudo keytool -list -keystore "$(/usr/libexec/java_home)/lib/security/cacerts" -storepass changeit|grep keycloak
+
+
+6) Create the folders under src/main/jib/truststore
+7) Copy to cacerts to  src/main/jib/truststore
+
+Elasticsearch
+=============
+> docker pull docker.elastic.co/elasticsearch/elasticsearch:8.2.2
+> docker network create elastic
+> docker run -d --name es01 --net elastic -p 9200:9200 -p 9300:9300 -it docker.elastic.co/elasticsearch/elasticsearch:8.2.2
+
+ Elasticsearch security features have been automatically configured!
+-> Authentication is enabled and cluster connections are encrypted.
+
+->  Password for the elastic user (reset with `bin/elasticsearch-reset-password -u elastic`):
+  ptNU3PpiCrsFA-L-wo0X
+
+->  HTTP CA certificate SHA-256 fingerprint:
+  1819b4bc797d7a3edb6491c807456fcca6a9876f26bd8bb0faf856ade183378a
+
+->  Configure Kibana to use this cluster:
+* Run Kibana and click the configuration link in the terminal when Kibana starts.
+* Copy the following enrollment token and paste it into Kibana in your browser (valid for the next 30 minutes):
+  eyJ2ZXIiOiI4LjIuMiIsImFkciI6WyIxNzIuMTguMC4yOjkyMDAiXSwiZmdyIjoiMTgxOWI0YmM3OTdkN2EzZWRiNjQ5MWM4MDc0NTZmY2NhNmE5ODc2ZjI2YmQ4YmIwZmFmODU2YWRlMTgzMzc4YSIsImtleSI6Im9aUmFUb0VCSDV6REpocldHbnRxOjZPZjBSMjdvUi1XYXZPSUFjMDJ5TncifQ==
+
+-> Configure other nodes to join this cluster:
+* Copy the following enrollment token and start new Elasticsearch nodes with `bin/elasticsearch --enrollment-token <token>` (valid for the next 30 minutes):
+  eyJ2ZXIiOiI4LjIuMiIsImFkciI6WyIxNzIuMTguMC4yOjkyMDAiXSwiZmdyIjoiMTgxOWI0YmM3OTdkN2EzZWRiNjQ5MWM4MDc0NTZmY2NhNmE5ODc2ZjI2YmQ4YmIwZmFmODU2YWRlMTgzMzc4YSIsImtleSI6Im41UmFUb0VCSDV6REpocldHbnRvOmNxMkZtY3NfU1Y2cjVxNFBtZDU5dGcifQ==
+
+  If you're running in Docker, copy the enrollment token and run:
+  `docker run -e "ENROLLMENT_TOKEN=<token>" docker.elastic.co/elasticsearch/elasticsearch:8.2.2`
+
+> copy password to langkuik
+> vi config/elasticsearch.yml => xpack.security.enabled: false (Dont do on prod)
+> restart
+
+
+Minio
+=====
+docker run \
+  -d \
+  -p 9000:9000 \
+  -p 9001:9001 \
+  -e "MINIO_ROOT_USER=admin" \
+  -e "MINIO_ROOT_PASSWORD=adminadmin" \
+  quay.io/minio/minio server /data --console-address ":9001"
+  
+  create bucket, create user assign policy readwrite
+Create alias
+> mc alias set myminio http://localhost:9000 admin adminadmin
+
+Create user
+> mc admin user add myminio langkuik vKBgHVhbbIhlXscOLEXLEiaZqGPgIQQs
+
+Assign user readwrite policy (Dont do on prod)
+> mc admin policy set myminio readwrite user=langkuik
+
+Create a bucket
+> mc mb myminio/langkuik
+
+ApacheDS (LDAP)
+===============
+Create data volume
+>  docker volume create apacheds_data
+
+Run
+> docker run -d -p 10389:10389 -v apacheds_data:/var/lib/apacheds openfrontier/
+
+Connect with ApacheDS Studio
+Bind user: uid=admin,ou=system 
+Password: secret
+
+
+
+Langkuik
+========
+make sure id is beyond you references
+
+maven:
+
+        <dependency>
+            <groupId>com.azrul</groupId>
+            <artifactId>langkuik-framework-library</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.9.3</version>
+        </dependency>
+        
+        okhttp3 to override 
