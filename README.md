@@ -105,18 +105,14 @@ xsi:noNamespaceSchemaLocation="workflow.xsd">
  
 
 Getting started
----------------
-
- 
+--------------- 
 
 A tutorial using Langkuik to build a simple Project Management Workflow
-application
-
- 
+application is presented here <https://github.com/azrulhasni/langkuik/blob/main/tutorial01.md>
 
 Sample project <https://github.com/azrulhasni/project-mgmt-workflow-01-1>
 
- 
+A full-blown Loan Orgination System can be found here <https://github.com/azrulhasni/langkuik-loanorigsystem> 
 
  
 
