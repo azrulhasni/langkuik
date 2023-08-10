@@ -104,8 +104,8 @@ xsi:noNamespaceSchemaLocation="workflow.xsd">
 
  
 
-Getting started
---------------- 
+Getting Started
+----------------------
 
 A tutorial using Langkuik to build a simple Project Management Workflow
 application is presented here <https://github.com/azrulhasni/langkuik/blob/main/tutorial01.md>
