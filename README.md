@@ -3,6 +3,11 @@ Langkuik
 
  
 
+ 
+
+Introduction
+------------
+
 Langkuik is a Model-Driven-Development & Code-As-Needed workflow framework.
 
 It allows a user to use plain old Java objects (POJOs) as a data model and XML
@@ -99,6 +104,22 @@ xsi:noNamespaceSchemaLocation="workflow.xsd">
 
  
 
+Getting started
+---------------
+
+ 
+
+A tutorial using Langkuik to build a simple Project Management Workflow
+application
+
+ 
+
+Sample project <https://github.com/azrulhasni/project-mgmt-workflow-01-1>
+
+ 
+
+ 
+
 Component Architecture
 ----------------------
 
@@ -161,6 +182,25 @@ elasticsearch protocol and therefore is also compatible with Elasticsearch.
 
  
 
+Maven repository
+----------------
+
+ 
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+<dependency>
+    <groupId>com.azrul</groupId>
+    <artifactId>langkuik</artifactId>
+    <version>1.0</version>
+    <exclusions>
+        <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
  
 
 Deployment architecture
@@ -216,7 +256,7 @@ one below is what we are suggesting as a typical production setup.'
 8.  For data services (RDBMS, object storage and search) we will leverage
     managed services. For on-prem deployment, we can consider the options below
 
-    -   RDBMS: CockroadDB - a Postgresql compatible, highly resilient,
+    -   RDBMS: CockroachDB - a Postgresql compatible, highly resilient,
         distributed RDBMS
 
     -   Storage : Minio - an S3 compatible, highly resilient, distributed object
@@ -588,12 +628,12 @@ to allow user query.
 
 -   `UserIdentifierLookup`
 
-    Langkuik user would need to provide the implementation of this interface to
-    bridge between the Keycloak user id (obtained when a user successfully login
-    to Keycloak) and Langkuik. With LDAP, for example, the Keycloak user map
-    (containing the user information obtained through Keycloak) is being queried
-    for `LDAP_ENTRY_DN.` An LDAP entry DN (e.g. `cn=Clara
-    Holmes,ou=people,o=sevenSeas`) would be used as a full-fledge user
+    Developers using Langkuik would need to provide the implementation of this
+    interface to bridge between the Keycloak user id (obtained when a user
+    successfully login to Keycloak) and Langkuik. With LDAP, for example, the
+    Keycloak user map (containing the user information obtained through
+    Keycloak) is being queried for `LDAP_ENTRY_DN.` An LDAP entry DN (e.g.
+    `cn=Clara Holmes,ou=people,o=sevenSeas`) would be used as a full-fledge user
     identifier in Langkuik.
 
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -677,7 +717,7 @@ In another organization, a manager field might be attached to a group instead.
 Every personnel belonging to the group will report to the manager of the group.
 
 For smaller organisations, the hierarchy information is not stored in a system
-purse. It is probably captured in some spreadsheet or represented as an org
+perse. It is probably captured in some spreadsheet or represented as an org
 chart on a wall instead.
 
 To allow for multiple options, instead of providing a concrete library, we are
@@ -914,8 +954,8 @@ Langkuik’s own model (such as** `AttachmentsContainer`**)**
 
     **All searchable fields must have the annotations** `WebField` ,
     `GenericField`(for sorting) and one of`GenericField` (for search),
-    `KeywordField` or `FullTextField`. The properties` WebField.displayName,
-    GenericField.name`,` KeywordField.name`, or `FullTextField.name` must be the
+    `KeywordField` or `FullTextField`. The properties`WebField.displayName,
+    GenericField.name`,`KeywordField.name`, or `FullTextField.name` must be the
     same. It must be human readable with spaces replaced with a dash (-)
 
  
@@ -1357,7 +1397,7 @@ In a reference relationship
 
         -   There are 3 types of sub form.
 
-        -   The default` SubFormType.IN_PARENT`. In this type, the relationship
+        -   The default`SubFormType.IN_PARENT`. In this type, the relationship
             will be displayed as a table directly in the main form as below:
 
 ![](doc.images/rH0Reb.jpg)
